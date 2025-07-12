@@ -5,6 +5,7 @@ import {
   getUserByEmail,
   updateUser,
   updateUserRole,
+  updateUserRoleByEmail,
   upsertUser,
 } from "../controllers/usersController.js";
 import { verifyJWT } from "../middlewares/verifyJWT.js";
@@ -20,5 +21,6 @@ router.get("/:email", verifyJWT, getUserByEmail);
 router.patch("/:email", verifyJWT, updateUser);
 router.delete("/:id", verifyJWT, deleteUser);
 router.patch("/role/:id", verifyJWT, updateUserRole);
+router.patch("/role-by-email/:email", verifyJWT, updateUserRoleByEmail);
 
 export default router;

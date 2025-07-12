@@ -70,3 +70,21 @@ export const updateUserRole = async (req, res) => {
 
   res.json({ message: `User role updated to ${role}`, result });
 };
+
+// ✅ Change User Role by Email (used when only email is available)
+export const updateUserRoleByEmail = async (req, res) => {
+  const { email } = req.params;
+  const { role } = req.body;
+
+  if (!["user", "charity", "restaurant", "admin"].includes(role)) {
+    return res.status(400).json({ error: "Invalid role" });
+  }
+
+  const result = await usersCollection.updateOne({ email }, { $set: { role } });
+
+  if (result.matchedCount === 0) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  res.json({ message: `User role updated to ${role}`, result });
+};

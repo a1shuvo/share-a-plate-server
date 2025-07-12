@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { roleRequestsCollection } from "../collections/index.js";
 
 // POST /api/role-requests
@@ -22,6 +23,23 @@ export const getRoleRequestByEmail = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch role request" });
   }
+};
+
+// PATCH /role-requests/:id
+export const updateRoleRequestStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!["Approved", "Rejected"].includes(status)) {
+    return res.status(400).json({ error: "Invalid status" });
+  }
+
+  const result = await roleRequestsCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { status } }
+  );
+
+  res.json({ message: `Request ${status.toLowerCase()}`, result });
 };
 
 // (Optional: for admin)
