@@ -1,0 +1,74 @@
+import { donationsCollection } from "../collections/index.js";
+import { ObjectId } from "mongodb";
+
+// ✅ Create Donation
+export const createDonation = async (req, res) => {
+  try {
+    const donation = {
+      title: req.body.title,
+      description: req.body.description,
+      quantity: req.body.quantity,
+      foodType: req.body.foodType,
+      pickupTime: req.body.pickupTime,
+      image: req.body.image,
+      location: req.body.location,
+      status: "Pending",
+      isFeatured: false,
+      restaurant: {
+        name: req.user.name,
+        email: req.user.email,
+        userId: req.user._id,
+      },
+      createdAt: new Date(),
+    };
+    const result = await donationsCollection.insertOne(donation);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to create donation" });
+  }
+};
+
+// ✅ Get All Verified Donations
+export const getAllVerifiedDonations = async (req, res) => {
+  const donations = await donationsCollection.find({ status: "Verified" }).toArray();
+  res.json(donations);
+};
+
+// ✅ Get My Donations (Restaurant)
+export const getMyDonations = async (req, res) => {
+  const email = req.user.email;
+  const myDonations = await donationsCollection.find({ "restaurant.email": email }).toArray();
+  res.json(myDonations);
+};
+
+// ✅ Get Single Donation by ID
+export const getDonationById = async (req, res) => {
+  const { id } = req.params;
+  const donation = await donationsCollection.findOne({ _id: new ObjectId(id) });
+  if (!donation) return res.status(404).json({ error: "Donation not found" });
+  res.json(donation);
+};
+
+// ✅ Update Donation (only if Pending or Verified)
+export const updateDonation = async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  const filter = { _id: new ObjectId(id), "restaurant.email": req.user.email };
+
+  const result = await donationsCollection.updateOne(filter, { $set: updates });
+  if (result.matchedCount === 0) return res.status(404).json({ error: "Not authorized or not found" });
+
+  res.json({ message: "Donation updated", result });
+};
+
+// ✅ Delete Donation
+export const deleteDonation = async (req, res) => {
+  const { id } = req.params;
+  const result = await donationsCollection.deleteOne({
+    _id: new ObjectId(id),
+    "restaurant.email": req.user.email,
+  });
+  if (result.deletedCount === 0) return res.status(404).json({ error: "Not found or unauthorized" });
+
+  res.json({ message: "Donation deleted" });
+};

@@ -1,5 +1,5 @@
-import { usersCollection } from "../collections/index.js";
 import { ObjectId } from "mongodb";
+import { usersCollection } from "../collections/index.js";
 
 // ✅ Create or Upsert User (used after login/register)
 export const upsertUser = async (req, res) => {
@@ -41,10 +41,7 @@ export const updateUser = async (req, res) => {
   const { email } = req.params;
   const updates = req.body;
 
-  const result = await usersCollection.updateOne(
-    { email },
-    { $set: updates }
-  );
+  const result = await usersCollection.updateOne({ email }, { $set: updates });
   res.json({ message: "User updated", result });
 };
 
@@ -52,7 +49,8 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
   const result = await usersCollection.deleteOne({ _id: new ObjectId(id) });
-  if (result.deletedCount === 0) return res.status(404).json({ error: "User not found" });
+  if (result.deletedCount === 0)
+    return res.status(404).json({ error: "User not found" });
   res.json({ message: "User deleted" });
 };
 
