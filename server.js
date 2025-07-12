@@ -4,6 +4,8 @@ import express from "express";
 import { connectDB } from "./db/connect.js";
 import donationsRoutes from "./routes/donationsRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import roleRequestRoutes from "./routes/roleRequestRoutes.js";
+import transactionRoutes from "./routes/transactionRoutes.js";
 import usersRoutes from "./routes/usersRoutes.js";
 
 dotenv.config();
@@ -37,3 +39,5 @@ startServer();
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/donations", donationsRoutes);
 app.use("/api/v1/payments", paymentRoutes);
+app.use("/api/v1/role-requests", roleRequestRoutes);
+app.use("/api/v1/transactions", transactionRoutes);
