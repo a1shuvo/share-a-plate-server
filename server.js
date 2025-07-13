@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import { connectDB } from "./db/connect.js";
 import donationsRoutes from "./routes/donationsRoutes.js";
+import favoritesRoutes from "./routes/favoritesRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import requestRoutes from "./routes/requestRoutes.js";
 import reviewsRoutes from "./routes/reviewsRoutes.js";
@@ -45,3 +46,5 @@ app.use("/api/v1/role-requests", roleRequestRoutes);
 app.use("/api/v1/transactions", transactionRoutes);
 app.use("/api/v1/requests", requestRoutes);
 app.use("/api/v1/reviews", reviewsRoutes);
+
+app.use("/api/v1/favorites", favoritesRoutes);

@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { donationsCollection } from "../collections/index.js";
-import { deleteReviewsByDonationId } from "./reviewsController";
+import { deleteReviewsByDonationId } from "./reviewsController.js";
 
 // ✅ Create Donation
 export const createDonation = async (req, res) => {
