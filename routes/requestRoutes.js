@@ -4,6 +4,7 @@ import {
   confirmPickup,
   createRequest,
   deleteRequest,
+  getMyRequests,
   getAllRequests,
   getMyPickups,
   getRequestsForRestaurant,
@@ -14,6 +15,7 @@ import { verifyFBToken } from "../middlewares/verifyFBToken.js";
 const router = express.Router();
 
 router.post("/", verifyFBToken, createRequest); // Charity: Request donation
+router.get("/mine", verifyFBToken, getMyRequests); // Charity: View their own requests
 router.get("/restaurant", verifyFBToken, getRequestsForRestaurant); // Restaurant: View requests
 router.get("/admin/all", verifyFBToken, getAllRequests); // Admin: View all
 router.patch("/accept/:id", verifyFBToken, acceptRequest); // Restaurant: Accept

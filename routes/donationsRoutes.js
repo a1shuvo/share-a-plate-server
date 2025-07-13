@@ -2,6 +2,7 @@ import express from "express";
 import {
   createDonation,
   deleteDonation,
+  featureDonation,
   getAllDonations,
   getAllVerifiedDonations,
   getDonationById,
@@ -23,6 +24,7 @@ router.get("/", verifyFBToken, getAllDonations);
 router.post("/", verifyFBToken, createDonation);
 router.get("/mine/all", verifyFBToken, getMyDonations);
 router.patch("/:id", verifyFBToken, updateDonation);
+router.patch("/feature/:id", verifyFBToken, featureDonation);
 router.delete("/:id", verifyFBToken, deleteDonation);
 
 export default router;

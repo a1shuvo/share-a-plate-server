@@ -85,6 +85,21 @@ export const updateDonation = async (req, res) => {
   });
 };
 
+// PATCH /donations/feature/:id
+export const featureDonation = async (req, res) => {
+  const { id } = req.params;
+
+  const result = await donationsCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { isFeatured: true } }
+  );
+
+  res.json({
+    message: "Donation marked as featured",
+    modifiedCount: result.modifiedCount,
+  });
+};
+
 // ✅ Delete Donation
 export const deleteDonation = async (req, res) => {
   const { id } = req.params;

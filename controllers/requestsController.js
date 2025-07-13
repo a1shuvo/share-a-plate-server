@@ -1,16 +1,21 @@
 import { ObjectId } from "mongodb";
-import { requestsCollection, donationsCollection } from "../collections/index.js";
+import {
+  donationsCollection,
+  requestsCollection,
+} from "../collections/index.js";
 
 // ➕ Create a donation request (Charity)
 export const createRequest = async (req, res) => {
   try {
     const request = {
       donationId: new ObjectId(req.body.donationId),
-      donationTitle: req.body.donationTitle,
+      donationTitle: req.body.title,
+      foodType: req.body.foodType,
+      quantity: req.body.quantity,
       restaurantName: req.body.restaurantName,
       charityName: req.user.name,
       charityEmail: req.user.email,
-      requestDescription: req.body.requestDescription,
+      requestDescription: req.body.description,
       pickupTime: req.body.pickupTime,
       status: "Pending",
       createdAt: new Date(),
@@ -28,11 +33,26 @@ export const getRequestsForRestaurant = async (req, res) => {
   try {
     const email = req.user.email;
     const requests = await requestsCollection
-      .find({ "restaurantEmail": email })
+      .find({ restaurantEmail: email })
       .toArray();
 
     res.json(requests);
   } catch (err) {
+    res.status(500).json({ error: "Failed to fetch requests" });
+  }
+};
+
+// Get my requests (Charity)
+export const getMyRequests = async (req, res) => {
+  try {
+    const email = req.user.email;
+    const requests = await requestsCollection
+      .find({ charityEmail: email })
+      .sort({ createdAt: -1 })
+      .toArray();
+    res.status(200).json(requests);
+  } catch (err) {
+    console.error("Error fetching my requests:", err);
     res.status(500).json({ error: "Failed to fetch requests" });
   }
 };
@@ -52,7 +72,9 @@ export const acceptRequest = async (req, res) => {
   const requestId = req.params.id;
 
   try {
-    const request = await requestsCollection.findOne({ _id: new ObjectId(requestId) });
+    const request = await requestsCollection.findOne({
+      _id: new ObjectId(requestId),
+    });
 
     if (!request) return res.status(404).json({ error: "Request not found" });
 
@@ -99,7 +121,11 @@ export const confirmPickup = async (req, res) => {
 
     // Update request status
     await requestsCollection.updateOne(
-      { donationId: new ObjectId(donationId), charityEmail: req.user.email, status: "Accepted" },
+      {
+        donationId: new ObjectId(donationId),
+        charityEmail: req.user.email,
+        status: "Accepted",
+      },
       { $set: { status: "Picked Up" } }
     );
 
@@ -133,7 +159,9 @@ export const getMyPickups = async (req, res) => {
 export const deleteRequest = async (req, res) => {
   try {
     const requestId = req.params.id;
-    const result = await requestsCollection.deleteOne({ _id: new ObjectId(requestId) });
+    const result = await requestsCollection.deleteOne({
+      _id: new ObjectId(requestId),
+    });
 
     if (result.deletedCount === 0)
       return res.status(404).json({ error: "Request not found" });
