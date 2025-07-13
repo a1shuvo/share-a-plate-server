@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { donationsCollection } from "../collections/index.js";
+import { deleteReviewsByDonationId } from "./reviewsController";
 
 // ✅ Create Donation
 export const createDonation = async (req, res) => {
@@ -91,6 +92,7 @@ export const deleteDonation = async (req, res) => {
     _id: new ObjectId(id),
     "restaurant.email": req.user.email,
   });
+  await deleteReviewsByDonationId(id); // Delete Reviews when donation is deleted
   if (result.deletedCount === 0)
     return res.status(404).json({ error: "Not found or unauthorized" });
 
