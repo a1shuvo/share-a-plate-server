@@ -4,12 +4,12 @@ import {
   getTransactionsByEmail,
   saveTransaction,
 } from "../controllers/transactionController.js";
-import { verifyJWT } from "../middlewares/verifyJWT.js";
+import { verifyFBToken } from "../middlewares/verifyFBToken.js";
 
 const router = express.Router();
 
-router.post("/", verifyJWT, saveTransaction);
-router.get("/", verifyJWT, getTransactionsByEmail);
-router.get("/", verifyJWT, getAllTransactions);
+router.post("/", verifyFBToken, saveTransaction);
+router.get("/", verifyFBToken, getTransactionsByEmail);
+router.get("/", verifyFBToken, getAllTransactions);
 
 export default router;

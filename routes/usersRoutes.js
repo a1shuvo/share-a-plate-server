@@ -8,7 +8,7 @@ import {
   updateUserRoleByEmail,
   upsertUser,
 } from "../controllers/usersController.js";
-import { verifyJWT } from "../middlewares/verifyJWT.js";
+import { verifyFBToken } from "../middlewares/verifyFBToken.js";
 
 const router = express.Router();
 
@@ -16,11 +16,11 @@ const router = express.Router();
 router.put("/upsert", upsertUser);
 
 // Admin only (you can later wrap with role middleware)
-router.get("/", verifyJWT, getAllUsers);
-router.get("/:email", verifyJWT, getUserByEmail);
-router.patch("/:email", verifyJWT, updateUser);
-router.delete("/:id", verifyJWT, deleteUser);
-router.patch("/role/:id", verifyJWT, updateUserRole);
-router.patch("/role-by-email/:email", verifyJWT, updateUserRoleByEmail);
+router.get("/", verifyFBToken, getAllUsers);
+router.get("/:email", verifyFBToken, getUserByEmail);
+router.patch("/:email", verifyFBToken, updateUser);
+router.delete("/:id", verifyFBToken, deleteUser);
+router.patch("/role/:id", verifyFBToken, updateUserRole);
+router.patch("/role-by-email/:email", verifyFBToken, updateUserRoleByEmail);
 
 export default router;

@@ -8,21 +8,21 @@ import {
   getMyDonations,
   updateDonation,
 } from "../controllers/donationsController.js";
-import { verifyJWT } from "../middlewares/verifyJWT.js";
+import { verifyFBToken } from "../middlewares/verifyFBToken.js";
 
 const router = express.Router();
 
 // Public
-router.get("/verified", verifyJWT, getAllVerifiedDonations);
-router.get("/:id", verifyJWT, getDonationById);
+router.get("/verified", verifyFBToken, getAllVerifiedDonations);
+router.get("/:id", verifyFBToken, getDonationById);
 
 // Admin
-router.get("/", verifyJWT, getAllDonations);
+router.get("/", verifyFBToken, getAllDonations);
 
 // Restaurant only (authenticated)
-router.post("/", verifyJWT, createDonation);
-router.get("/mine/all", verifyJWT, getMyDonations);
-router.patch("/:id", verifyJWT, updateDonation);
-router.delete("/:id", verifyJWT, deleteDonation);
+router.post("/", verifyFBToken, createDonation);
+router.get("/mine/all", verifyFBToken, getMyDonations);
+router.patch("/:id", verifyFBToken, updateDonation);
+router.delete("/:id", verifyFBToken, deleteDonation);
 
 export default router;
