@@ -2,6 +2,7 @@ import express from "express";
 import {
   createDonation,
   deleteDonation,
+  getAllDonations,
   getAllVerifiedDonations,
   getDonationById,
   getMyDonations,
@@ -12,8 +13,11 @@ import { verifyJWT } from "../middlewares/verifyJWT.js";
 const router = express.Router();
 
 // Public
-router.get("/", verifyJWT, getAllVerifiedDonations);
+router.get("/verified", verifyJWT, getAllVerifiedDonations);
 router.get("/:id", verifyJWT, getDonationById);
+
+// Admin
+router.get("/", verifyJWT, getAllDonations);
 
 // Restaurant only (authenticated)
 router.post("/", verifyJWT, createDonation);
