@@ -85,19 +85,33 @@ export const updateDonation = async (req, res) => {
   });
 };
 
-// PATCH /donations/feature/:id
+// ✅ Toggle isFeatured field for a donation
 export const featureDonation = async (req, res) => {
   const { id } = req.params;
+  try {
+    const donation = await donationsCollection.findOne({
+      _id: new ObjectId(id),
+    });
 
-  const result = await donationsCollection.updateOne(
-    { _id: new ObjectId(id) },
-    { $set: { isFeatured: true } }
-  );
+    if (!donation) {
+      return res.status(404).json({ error: "Donation not found" });
+    }
+    const newStatus = !donation.isFeatured;
 
-  res.json({
-    message: "Donation marked as featured",
-    modifiedCount: result.modifiedCount,
-  });
+    const result = await donationsCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { isFeatured: newStatus } }
+    );
+
+    res.json({
+      message: `Donation ${newStatus ? "marked as" : "removed from"} featured`,
+      modifiedCount: result.modifiedCount,
+      isFeatured: newStatus,
+    });
+  } catch (err) {
+    console.error("Error toggling featured donation:", err);
+    res.status(500).json({ error: "Failed to update featured status" });
+  }
 };
 
 // ✅ Delete Donation
