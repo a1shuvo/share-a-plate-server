@@ -18,7 +18,7 @@ export const verifyFBToken = async (req, res, next) => {
 
     // Attach user info to request
     req.user = {
-      name: decodedToken.name || "Anonymous",
+      name: decodedToken.name || decodedToken.displayName || "Anonymous",
       email: decodedToken.email,
       _id: decodedToken.uid,
     };
@@ -29,9 +29,3 @@ export const verifyFBToken = async (req, res, next) => {
     return res.status(403).json({ error: "Invalid or expired token" });
   }
 };
-
-// req.user = {
-//   name: "Demo Restaurant",
-//   email: "restaurant@example.com",
-//   _id: "123abc",
-// };

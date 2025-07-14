@@ -4,13 +4,13 @@ import { reviewsCollection } from "../collections/index.js";
 // ✅ Add a Review
 export const addReview = async (req, res) => {
   try {
-    const { donationId, name, description, rating } = req.body;
-
+    const { donationId, userImage, description, rating } = req.body;
     const review = {
       donationId: new ObjectId(donationId),
-      name,
+      name: req.user.name,
       description,
       rating,
+      userImage,
       userEmail: req.user.email,
       createdAt: new Date(),
     };

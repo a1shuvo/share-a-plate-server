@@ -57,8 +57,6 @@ export const getAllDonations = async (req, res) => {
 // ✅ Get All Active Donations (Verified, Requested, Picked Up)
 export const getAllActiveDonations = async (req, res) => {
   try {
-    console.log("Hit");
-
     const donations = await donationsCollection
       .find({
         status: { $in: ["Verified", "Requested", "Picked Up"] },

@@ -18,7 +18,6 @@ export const getRoleRequestByEmail = async (req, res) => {
   try {
     const { email } = req.params;
     const request = await roleRequestsCollection.findOne({ email });
-    if (!request) return res.status(404).json({});
     res.json(request);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch role request" });

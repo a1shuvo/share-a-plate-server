@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.post("/", verifyFBToken, saveTransaction);
 router.get("/", verifyFBToken, getTransactionsByEmail);
-router.get("/", verifyFBToken, getAllTransactions);
+router.get("/all", verifyFBToken, getAllTransactions);
 
 export default router;
