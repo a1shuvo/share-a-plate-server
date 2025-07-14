@@ -7,8 +7,9 @@ import {
 // ➕ Create a donation request (Charity)
 export const createRequest = async (req, res) => {
   try {
+    const donationId = new ObjectId(req.body.donationId);
     const request = {
-      donationId: new ObjectId(req.body.donationId),
+      donationId,
       charityName: req.user.name,
       charityEmail: req.user.email,
       requestDescription: req.body.description,
@@ -18,6 +19,13 @@ export const createRequest = async (req, res) => {
     };
 
     const result = await requestsCollection.insertOne(request);
+
+    // Update donation status only if it's still Verified
+    await donationsCollection.updateOne(
+      { _id: donationId, status: "Verified" },
+      { $set: { status: "Requested" } }
+    );
+
     res.status(201).json(result);
   } catch (err) {
     res.status(500).json({ error: "Failed to request donation" });
@@ -218,8 +226,8 @@ export const confirmPickup = async (req, res) => {
   }
 };
 
-// ✅ Get my pickups (Charity)
-export const getMyPickups = async (req, res) => {
+// ✅ Get my accepted pickups (Charity)
+export const getMyAcceptedPickups = async (req, res) => {
   try {
     const email = req.user.email;
     const pickups = await requestsCollection
@@ -227,7 +235,7 @@ export const getMyPickups = async (req, res) => {
         {
           $match: {
             charityEmail: email,
-            status: { $in: ["Accepted", "Picked Up"] },
+            status: "Accepted",
           },
         },
         {
@@ -241,6 +249,7 @@ export const getMyPickups = async (req, res) => {
         { $unwind: "$donation" },
         {
           $project: {
+            donationId: "$donation._id",
             donationTitle: "$donation.title",
             foodType: "$donation.foodType",
             quantity: "$donation.quantity",
@@ -256,6 +265,48 @@ export const getMyPickups = async (req, res) => {
     res.json(pickups);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch pickups" });
+  }
+};
+
+// ✅ Get my received donations (Charity)
+export const getMyReceivedDonations = async (req, res) => {
+  try {
+    const email = req.user.email;
+    const received = await requestsCollection
+      .aggregate([
+        {
+          $match: {
+            charityEmail: email,
+            status: "Picked Up",
+          },
+        },
+        {
+          $lookup: {
+            from: "donations",
+            localField: "donationId",
+            foreignField: "_id",
+            as: "donation",
+          },
+        },
+        { $unwind: "$donation" },
+        {
+          $project: {
+            donationId: "$donation._id",
+            donationTitle: "$donation.title",
+            foodType: "$donation.foodType",
+            quantity: "$donation.quantity",
+            location: "$donation.location",
+            status: 1,
+            pickupTime: 1,
+            restaurantName: "$donation.restaurant.name",
+          },
+        },
+      ])
+      .toArray();
+
+    res.json(received);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch received donations" });
   }
 };
 

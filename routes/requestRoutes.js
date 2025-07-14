@@ -4,9 +4,10 @@ import {
   confirmPickup,
   createRequest,
   deleteRequest,
-  getMyRequests,
   getAllRequests,
-  getMyPickups,
+  getMyAcceptedPickups,
+  getMyReceivedDonations,
+  getMyRequests,
   getRequestsForRestaurant,
   rejectRequest,
 } from "../controllers/requestsController.js";
@@ -21,7 +22,8 @@ router.get("/admin/all", verifyFBToken, getAllRequests); // Admin: View all
 router.patch("/accept/:id", verifyFBToken, acceptRequest); // Restaurant: Accept
 router.patch("/reject/:id", verifyFBToken, rejectRequest); // Restaurant: Reject
 router.patch("/confirm/:donationId", verifyFBToken, confirmPickup); // Charity: Confirm Pickup
-router.get("/my-pickups", verifyFBToken, getMyPickups); // Charity: View pickups
+router.get("/my-pickups", verifyFBToken, getMyAcceptedPickups); // Charity: My Pickups
+router.get("/received", verifyFBToken, getMyReceivedDonations); // Charity: Received Donations
 router.delete("/:id", verifyFBToken, deleteRequest); // Admin: Delete request
 
 export default router;

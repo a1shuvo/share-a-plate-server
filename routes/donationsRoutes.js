@@ -3,8 +3,8 @@ import {
   createDonation,
   deleteDonation,
   featureDonation,
+  getAllActiveDonations,
   getAllDonations,
-  getAllVerifiedDonations,
   getDonationById,
   getMyDonations,
   updateDonation,
@@ -15,7 +15,7 @@ import { verifyFBToken } from "../middlewares/verifyFBToken.js";
 const router = express.Router();
 
 // Public
-router.get("/verified", verifyFBToken, getAllVerifiedDonations);
+router.get("/active", verifyFBToken, getAllActiveDonations);
 router.get("/:id", verifyFBToken, getDonationById);
 
 // Admin

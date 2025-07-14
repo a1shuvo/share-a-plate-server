@@ -44,12 +44,20 @@ export const getAllDonations = async (req, res) => {
   }
 };
 
-// ✅ Get All Verified Donations
-export const getAllVerifiedDonations = async (req, res) => {
-  const donations = await donationsCollection
-    .find({ status: "Verified" })
-    .toArray();
-  res.json(donations);
+// ✅ Get All Active Donations (Verified, Requested, Picked Up)
+export const getAllActiveDonations = async (req, res) => {
+  try {
+    const donations = await donationsCollection
+      .find({
+        status: { $in: ["Verified", "Requested", "Picked Up"] },
+      })
+      .toArray();
+
+    res.json(donations);
+  } catch (err) {
+    console.error("Failed to fetch active donations:", err);
+    res.status(500).json({ error: "Failed to fetch active donations" });
+  }
 };
 
 // ✅ Get My Donations (Restaurant)
