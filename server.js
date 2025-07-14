@@ -46,5 +46,4 @@ app.use("/api/v1/role-requests", roleRequestRoutes);
 app.use("/api/v1/transactions", transactionRoutes);
 app.use("/api/v1/requests", requestRoutes);
 app.use("/api/v1/reviews", reviewsRoutes);
-
 app.use("/api/v1/favorites", favoritesRoutes);

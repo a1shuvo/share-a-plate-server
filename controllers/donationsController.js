@@ -29,6 +29,16 @@ export const createDonation = async (req, res) => {
   }
 };
 
+// GET featured donations
+export const getFeaturedDonations = async (req, res) => {
+  const donations = await donationsCollection
+    .find({ isFeatured: true })
+    .sort({ createdAt: -1 })
+    .limit(8)
+    .toArray();
+  res.json(donations);
+};
+
 // ✅ GET /donations - Get all donations
 export const getAllDonations = async (req, res) => {
   try {
@@ -47,6 +57,8 @@ export const getAllDonations = async (req, res) => {
 // ✅ Get All Active Donations (Verified, Requested, Picked Up)
 export const getAllActiveDonations = async (req, res) => {
   try {
+    console.log("Hit");
+
     const donations = await donationsCollection
       .find({
         status: { $in: ["Verified", "Requested", "Picked Up"] },
@@ -72,9 +84,26 @@ export const getMyDonations = async (req, res) => {
 // ✅ Get Single Donation by ID
 export const getDonationById = async (req, res) => {
   const { id } = req.params;
-  const donation = await donationsCollection.findOne({ _id: new ObjectId(id) });
-  if (!donation) return res.status(404).json({ error: "Donation not found" });
-  res.json(donation);
+
+  // 🔒 Validate ObjectId format
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid donation ID" });
+  }
+
+  try {
+    const donation = await donationsCollection.findOne({
+      _id: new ObjectId(id),
+    });
+
+    if (!donation) {
+      return res.status(404).json({ error: "Donation not found" });
+    }
+
+    res.json(donation);
+  } catch (err) {
+    console.error("Error fetching donation by ID:", err);
+    res.status(500).json({ error: "Failed to fetch donation" });
+  }
 };
 
 // ✅ Update Donation (only if Pending or Verified)

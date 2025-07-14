@@ -1,8 +1,5 @@
 import { ObjectId } from "mongodb";
-import {
-  donationsCollection,
-  reviewsCollection,
-} from "../collections/index.js";
+import { reviewsCollection } from "../collections/index.js";
 
 // ✅ Add a Review
 export const addReview = async (req, res) => {
@@ -17,15 +14,7 @@ export const addReview = async (req, res) => {
       userEmail: req.user.email,
       createdAt: new Date(),
     };
-
     const result = await reviewsCollection.insertOne(review);
-
-    // Add review to donation document as well (optional denormalization)
-    await donationsCollection.updateOne(
-      { _id: new ObjectId(donationId) },
-      { $push: { reviews: review } }
-    );
-
     res
       .status(201)
       .json({ message: "Review added", insertedId: result.insertedId });

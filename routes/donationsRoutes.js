@@ -6,6 +6,7 @@ import {
   getAllActiveDonations,
   getAllDonations,
   getDonationById,
+  getFeaturedDonations,
   getMyDonations,
   updateDonation,
   updateDonationStatusByAdmin,
@@ -14,19 +15,26 @@ import { verifyFBToken } from "../middlewares/verifyFBToken.js";
 
 const router = express.Router();
 
-// Public
-router.get("/active", verifyFBToken, getAllActiveDonations);
-router.get("/:id", verifyFBToken, getDonationById);
+// 📢 Public route
+router.get("/featured", getFeaturedDonations);
 
-// Admin
+// ✅ Authenticated (Charity, Admin, Restaurant)
+router.get("/active", verifyFBToken, getAllActiveDonations);
+router.get("/mine/all", verifyFBToken, getMyDonations);
 router.get("/", verifyFBToken, getAllDonations);
 
-// Restaurant only (authenticated)
+// ⚠️ Keep dynamic route at the end to prevent conflicts
+router.get("/:id", verifyFBToken, getDonationById);
+
+// ➕ Create donation (Restaurant)
 router.post("/", verifyFBToken, createDonation);
-router.get("/mine/all", verifyFBToken, getMyDonations);
+
+// 🔄 Update donation (Restaurant or Admin)
 router.patch("/:id", verifyFBToken, updateDonation);
 router.patch("/admin/status/:id", verifyFBToken, updateDonationStatusByAdmin);
 router.patch("/feature/:id", verifyFBToken, featureDonation);
+
+// ❌ Delete donation (Restaurant)
 router.delete("/:id", verifyFBToken, deleteDonation);
 
 export default router;
