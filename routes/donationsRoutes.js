@@ -8,6 +8,7 @@ import {
   getDonationById,
   getMyDonations,
   updateDonation,
+  updateDonationStatusByAdmin,
 } from "../controllers/donationsController.js";
 import { verifyFBToken } from "../middlewares/verifyFBToken.js";
 
@@ -24,6 +25,7 @@ router.get("/", verifyFBToken, getAllDonations);
 router.post("/", verifyFBToken, createDonation);
 router.get("/mine/all", verifyFBToken, getMyDonations);
 router.patch("/:id", verifyFBToken, updateDonation);
+router.patch("/admin/status/:id", verifyFBToken, updateDonationStatusByAdmin);
 router.patch("/feature/:id", verifyFBToken, featureDonation);
 router.delete("/:id", verifyFBToken, deleteDonation);
 

@@ -9,10 +9,6 @@ export const createRequest = async (req, res) => {
   try {
     const request = {
       donationId: new ObjectId(req.body.donationId),
-      donationTitle: req.body.title,
-      foodType: req.body.foodType,
-      quantity: req.body.quantity,
-      restaurantName: req.body.restaurantName,
       charityName: req.user.name,
       charityEmail: req.user.email,
       requestDescription: req.body.description,
@@ -33,7 +29,36 @@ export const getRequestsForRestaurant = async (req, res) => {
   try {
     const email = req.user.email;
     const requests = await requestsCollection
-      .find({ restaurantEmail: email })
+      .aggregate([
+        {
+          $lookup: {
+            from: "donations",
+            localField: "donationId",
+            foreignField: "_id",
+            as: "donation",
+          },
+        },
+        { $unwind: "$donation" },
+        {
+          $match: {
+            "donation.restaurant.email": email,
+          },
+        },
+        {
+          $project: {
+            donationTitle: "$donation.title",
+            foodType: "$donation.foodType",
+            quantity: "$donation.quantity",
+            location: "$donation.location",
+            requestDescription: 1,
+            pickupTime: 1,
+            charityName: 1,
+            charityEmail: 1,
+            status: 1,
+            createdAt: 1,
+          },
+        },
+      ])
       .toArray();
 
     res.json(requests);
@@ -47,12 +72,40 @@ export const getMyRequests = async (req, res) => {
   try {
     const email = req.user.email;
     const requests = await requestsCollection
-      .find({ charityEmail: email })
-      .sort({ createdAt: -1 })
+      .aggregate([
+        {
+          $match: {
+            charityEmail: email,
+          },
+        },
+        {
+          $lookup: {
+            from: "donations",
+            localField: "donationId",
+            foreignField: "_id",
+            as: "donation",
+          },
+        },
+        { $unwind: "$donation" },
+        {
+          $project: {
+            donationTitle: "$donation.title",
+            foodType: "$donation.foodType",
+            quantity: "$donation.quantity",
+            location: "$donation.location",
+            requestDescription: 1,
+            pickupTime: 1,
+            status: 1,
+            createdAt: 1,
+            restaurantName: "$donation.restaurant.name",
+          },
+        },
+        { $sort: { createdAt: -1 } },
+      ])
       .toArray();
+
     res.status(200).json(requests);
   } catch (err) {
-    console.error("Error fetching my requests:", err);
     res.status(500).json({ error: "Failed to fetch requests" });
   }
 };
@@ -60,7 +113,35 @@ export const getMyRequests = async (req, res) => {
 // 🧾 Get all requests (Admin)
 export const getAllRequests = async (req, res) => {
   try {
-    const requests = await requestsCollection.find().toArray();
+    const requests = await requestsCollection
+      .aggregate([
+        {
+          $lookup: {
+            from: "donations",
+            localField: "donationId",
+            foreignField: "_id",
+            as: "donation",
+          },
+        },
+        { $unwind: "$donation" },
+        {
+          $project: {
+            donationTitle: "$donation.title",
+            foodType: "$donation.foodType",
+            quantity: "$donation.quantity",
+            location: "$donation.location",
+            requestDescription: 1,
+            pickupTime: 1,
+            status: 1,
+            charityName: 1,
+            charityEmail: 1,
+            createdAt: 1,
+            restaurantName: "$donation.restaurant.name",
+          },
+        },
+      ])
+      .toArray();
+
     res.json(requests);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch all requests" });
@@ -78,13 +159,11 @@ export const acceptRequest = async (req, res) => {
 
     if (!request) return res.status(404).json({ error: "Request not found" });
 
-    // Update the selected request
     await requestsCollection.updateOne(
       { _id: new ObjectId(requestId) },
       { $set: { status: "Accepted" } }
     );
 
-    // Reject other requests for the same donation
     await requestsCollection.updateMany(
       {
         donationId: request.donationId,
@@ -119,7 +198,6 @@ export const confirmPickup = async (req, res) => {
   try {
     const donationId = req.params.donationId;
 
-    // Update request status
     await requestsCollection.updateOne(
       {
         donationId: new ObjectId(donationId),
@@ -129,7 +207,6 @@ export const confirmPickup = async (req, res) => {
       { $set: { status: "Picked Up" } }
     );
 
-    // Update the donation status
     await donationsCollection.updateOne(
       { _id: new ObjectId(donationId) },
       { $set: { status: "Picked Up" } }
@@ -146,7 +223,34 @@ export const getMyPickups = async (req, res) => {
   try {
     const email = req.user.email;
     const pickups = await requestsCollection
-      .find({ charityEmail: email, status: { $in: ["Accepted", "Picked Up"] } })
+      .aggregate([
+        {
+          $match: {
+            charityEmail: email,
+            status: { $in: ["Accepted", "Picked Up"] },
+          },
+        },
+        {
+          $lookup: {
+            from: "donations",
+            localField: "donationId",
+            foreignField: "_id",
+            as: "donation",
+          },
+        },
+        { $unwind: "$donation" },
+        {
+          $project: {
+            donationTitle: "$donation.title",
+            foodType: "$donation.foodType",
+            quantity: "$donation.quantity",
+            location: "$donation.location",
+            status: 1,
+            pickupTime: 1,
+            restaurantName: "$donation.restaurant.name",
+          },
+        },
+      ])
       .toArray();
 
     res.json(pickups);

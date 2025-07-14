@@ -85,7 +85,36 @@ export const updateDonation = async (req, res) => {
   });
 };
 
-// ✅ Toggle isFeatured field for a donation
+// ✅ Admin can verify or reject donations
+export const updateDonationStatusByAdmin = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  // Optional: Restrict only to "Verified" or "Rejected"
+  if (!["Verified", "Rejected"].includes(status)) {
+    return res.status(400).json({ error: "Invalid status value" });
+  }
+
+  try {
+    const result = await donationsCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "Donation not found" });
+    }
+
+    res.json({
+      message: `Donation marked as ${status}`,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// ✅ Toggle isFeatured field for a donation by admin
 export const featureDonation = async (req, res) => {
   const { id } = req.params;
   try {
