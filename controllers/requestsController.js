@@ -76,6 +76,46 @@ export const getRequestsForRestaurant = async (req, res) => {
   }
 };
 
+// GET /api/requests/latest (Public)
+export const getLatestDonationRequests = async (req, res) => {
+  try {
+    const pipeline = [
+      { $sort: { createdAt: -1 } },
+      { $limit: 3 },
+      {
+        $lookup: {
+          from: "users",
+          localField: "charityEmail",
+          foreignField: "email",
+          as: "charityInfo",
+        },
+      },
+      {
+        $unwind: {
+          path: "$charityInfo",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          donationTitle: 1,
+          charityName: 1,
+          requestDescription: 1,
+          createdAt: 1,
+          "charityImage": "$charityInfo.image",
+        },
+      },
+    ];
+
+    const latestRequests = await requestsCollection.aggregate(pipeline).toArray();
+
+    res.json(latestRequests);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch latest donation requests" });
+  }
+};
+
 // Get my requests (Charity)
 export const getMyRequests = async (req, res) => {
   try {

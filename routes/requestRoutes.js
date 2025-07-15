@@ -5,6 +5,7 @@ import {
   createRequest,
   deleteRequest,
   getAllRequests,
+  getLatestDonationRequests,
   getMyAcceptedPickups,
   getMyReceivedDonations,
   getMyRequests,
@@ -16,6 +17,7 @@ import { verifyRole } from "../middlewares/verifyRole.js";
 
 const router = express.Router();
 
+router.get("/latest", getLatestDonationRequests); // Public API
 router.post("/", verifyFBToken, verifyRole("charity"), createRequest); // Charity: Request donation
 router.get("/mine", verifyFBToken, verifyRole("charity"), getMyRequests); // Charity: View their own requests
 router.get(
