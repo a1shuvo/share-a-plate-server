@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { usersCollection } from "../collections/index.js";
+import admin from "../utils/firebaseAdmin.js";
 
 // ✅ Create or Upsert User (used after login/register)
 export const upsertUser = async (req, res) => {
@@ -48,10 +49,23 @@ export const updateUser = async (req, res) => {
 // ✅ Delete User (admin only)
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
-  const result = await usersCollection.deleteOne({ _id: new ObjectId(id) });
-  if (result.deletedCount === 0)
-    return res.status(404).json({ error: "User not found" });
-  res.json({ message: "User deleted" });
+  try {
+    // Step 1: Find user in MongoDB to get email
+    const user = await usersCollection.findOne({ _id: new ObjectId(id) });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // Step 2: Delete from MongoDB
+    await usersCollection.deleteOne({ _id: new ObjectId(id) });
+    // Step 3: Get Firebase user by email (since uid is not stored)
+    const fbUser = await admin.auth().getUserByEmail(user.email);
+    // Step 4: Delete from Firebase
+    await admin.auth().deleteUser(fbUser.uid);
+    res.json({ message: "User deleted from MongoDB and Firebase" });
+  } catch (err) {
+    console.error("Failed to delete user:", err);
+    res.status(500).json({ error: "Failed to delete user" });
+  }
 };
 
 // ✅ Change User Role (admin only)

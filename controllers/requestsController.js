@@ -10,6 +10,7 @@ export const createRequest = async (req, res) => {
     const donationId = new ObjectId(req.body.donationId);
     const request = {
       donationId,
+      donationTitle: req.body.donationTitle,
       charityName: req.user.name,
       charityEmail: req.user.email,
       requestDescription: req.body.description,
