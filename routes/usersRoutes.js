@@ -9,6 +9,7 @@ import {
   upsertUser,
 } from "../controllers/usersController.js";
 import { verifyFBToken } from "../middlewares/verifyFBToken.js";
+import { verifyRole } from "../middlewares/verifyRole.js";
 
 const router = express.Router();
 
@@ -16,11 +17,16 @@ const router = express.Router();
 router.put("/upsert", upsertUser);
 
 // Admin only (you can later wrap with role middleware)
-router.get("/", verifyFBToken, getAllUsers);
+router.get("/", verifyFBToken, verifyRole("admin"), getAllUsers);
 router.get("/:email", verifyFBToken, getUserByEmail);
-router.patch("/:email", verifyFBToken, updateUser);
-router.delete("/:id", verifyFBToken, deleteUser);
-router.patch("/role/:id", verifyFBToken, updateUserRole);
-router.patch("/role-by-email/:email", verifyFBToken, updateUserRoleByEmail);
+router.patch("/:email", verifyFBToken, verifyRole("admin"), updateUser);
+router.delete("/:id", verifyFBToken, verifyRole("admin"), deleteUser);
+router.patch("/role/:id", verifyFBToken, verifyRole("admin"), updateUserRole);
+router.patch(
+  "/role-by-email/:email",
+  verifyFBToken,
+  verifyRole("admin"),
+  updateUserRoleByEmail
+);
 
 export default router;

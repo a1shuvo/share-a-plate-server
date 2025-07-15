@@ -1,4 +1,4 @@
-// middlewares/verifyFBToken.js
+import { usersCollection } from "../collections/index.js";
 import admin from "../utils/firebaseAdmin.js";
 
 export const verifyFBToken = async (req, res, next) => {
@@ -15,12 +15,25 @@ export const verifyFBToken = async (req, res, next) => {
 
     // Verify Firebase ID token
     const decodedToken = await admin.auth().verifyIdToken(token);
+    const email = decodedToken.email;
 
-    // Attach user info to request
+    // Find user in DB by email
+    const user = await usersCollection.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ error: "User not found in database" });
+    }
+
+    // Attach user info and role to request
     req.user = {
-      name: decodedToken.name || decodedToken.displayName || "Anonymous",
-      email: decodedToken.email,
-      _id: decodedToken.uid,
+      name:
+        user.name ||
+        decodedToken.name ||
+        decodedToken.displayName ||
+        "Anonymous",
+      email: user.email,
+      _id: user._id,
+      role: user.role || "user", // Default to "user" if not set
     };
 
     next();
