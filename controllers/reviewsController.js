@@ -1,5 +1,8 @@
 import { ObjectId } from "mongodb";
-import { reviewsCollection } from "../collections/index.js";
+import {
+  donationsCollection,
+  reviewsCollection,
+} from "../collections/index.js";
 
 // ✅ Add a Review
 export const addReview = async (req, res) => {
@@ -40,12 +43,30 @@ export const getReviewsByDonation = async (req, res) => {
 // ✅ Get My Reviews
 export const getMyReviews = async (req, res) => {
   try {
+    // 1. Get all reviews submitted by the user
     const reviews = await reviewsCollection
       .find({ userEmail: req.user.email })
       .sort({ createdAt: -1 })
       .toArray();
-    res.json(reviews);
+
+    // 2. Map reviews with additional donation info
+    const enrichedReviews = await Promise.all(
+      reviews.map(async (review) => {
+        const donation = await donationsCollection.findOne({
+          _id: new ObjectId(review.donationId),
+        });
+
+        return {
+          ...review,
+          donationTitle: donation?.title || "Unknown",
+          restaurantName: donation?.restaurant?.name || "Unknown",
+        };
+      })
+    );
+
+    res.json(enrichedReviews);
   } catch (err) {
+    console.error("Error in getMyReviews:", err);
     res.status(500).json({ error: "Failed to fetch my reviews" });
   }
 };
