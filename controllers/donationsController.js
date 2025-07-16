@@ -34,9 +34,59 @@ export const getFeaturedDonations = async (req, res) => {
   const donations = await donationsCollection
     .find({ isFeatured: true })
     .sort({ createdAt: -1 })
-    .limit(8)
+    .limit(4)
     .toArray();
   res.json(donations);
+};
+
+// GET /donations/statistics?email
+export const getDonationStats = async (req, res) => {
+  const email = req.query.email;
+
+  try {
+    const result = await donationsCollection
+      .aggregate([
+        { $match: { "restaurant.email": email } },
+        {
+          $addFields: {
+            numericQuantity: {
+              $toDouble: {
+                $getField: {
+                  field: "match",
+                  input: {
+                    $regexFind: {
+                      input: { $toLower: "$quantity" },
+                      regex: /^[0-9]+(\.[0-9]+)?/,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$foodType",
+            totalQuantity: { $sum: "$numericQuantity" },
+            rawQuantities: { $push: "$quantity" },
+          },
+        },
+        {
+          $project: {
+            foodType: "$_id",
+            totalQuantity: 1,
+            rawQuantities: 1,
+            _id: 0,
+          },
+        },
+      ])
+      .toArray();
+
+    res.json(result);
+  } catch (err) {
+    console.error("Donation stats error:", err);
+    res.status(500).json({ error: "Failed to fetch statistics" });
+  }
 };
 
 // ✅ GET /donations - Get all donations

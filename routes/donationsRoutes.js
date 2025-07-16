@@ -6,6 +6,7 @@ import {
   getAllActiveDonations,
   getAllDonations,
   getDonationById,
+  getDonationStats,
   getFeaturedDonations,
   getMyDonations,
   updateDonation,
@@ -18,8 +19,13 @@ const router = express.Router();
 
 // 📢 Public route
 router.get("/featured", getFeaturedDonations);
-
 // ✅ Authenticated (Charity, Admin, Restaurant)
+router.get(
+  "/statistics",
+  verifyFBToken,
+  verifyRole("restaurant"),
+  getDonationStats
+);
 router.get("/active", verifyFBToken, getAllActiveDonations);
 router.get(
   "/mine/all",
